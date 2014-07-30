@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=640, user-scalable=no, target-densitydpi=device-dpi, minimal-ui">
+    <title></title>
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+</head>
+<body>
+<!--<div class="console"></div>-->
+
+<section class="u-arrow"><p class="css_sprite01"></p></section>
+    <div class="scroll_box">
+        <canvas id="canvas">
+            <p>Your browserdoes not support the canvas element!</p>
+        </canvas>
+        <div class="content_box" style="background-image: url('http://fjqz.com.cn/fangti2/img/0.jpg')"></div>
+    </div>
+    <div class="scroll_box hide">
+        <div class="content_box" style="background-image: url('http://fjqz.com.cn/fangti2/img/1.jpg')"></div>
+    </div>
+    <div class="scroll_box hide">
+        <div class="content_box" style="background-image: url('http://fjqz.com.cn/fangti2/img/2.jpg')"></div>
+    </div>
+    <div class="scroll_box hide">
+        <div class="content_box" style="background-image: url('http://fjqz.com.cn/fangti2/img/3.jpg')"></div>
+    </div>
+</body>
+</html>
+<style type="text/css">
+    .console {
+        position: absolute;
+        color: white;
+        font-size: 30px;
+        z-index: 999;
+        bottom: 0;
+        right: 0;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 640px;
+        height: 1136px;
+    }
+    .hide {display: none;}
+    .scroll_box {
+        background-repeat: inherit;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    .content_box {
+        background-size: cover;
+        background-position: 50% 50%;
+    }
+    .animation {
+        -webkit-transition: all 0.3s;
+    }
+
+    canvas {
+        position: absolute;
+        -webkit-transition: all 0.8s;
+    }
+    .canvas_hide {
+        opacity: 0;
+    }
+
+    .u-arrow {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        z-index: 150;
+        width: 80px;
+        height: 80px;
+        margin-left: -39px;
+    }
+
+    .u-arrow p {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -14px 0 0 -25px;
+        width: 50px;
+        height: 28px;
+        background-position: 0 -82px;
+        -webkit-animation: start 1.5s infinite ease-in-out;
+        -moz-animation: start 1.5s infinite ease-in-out;
+        animation: start 1.5s infinite ease-in-out;
+    }
+    .css_sprite01 {
+        background-image: url(./image/css_sprite01.png)!important;
+        background-repeat: no-repeat!important;
+    }
+
+    /*箭头指示引导*/
+    @-webkit-keyframes start {
+        0%,30% {opacity: 0;-webkit-transform: translate(0,10px);}
+        60% {opacity: 1;-webkit-transform: translate(0,0);}
+        100% {opacity: 0;-webkit-transform: translate(0,-8px);}
+    }
+    @-moz-keyframes start {
+        0%,30% {opacity: 0;-moz-transform: translate(0,10px);}
+        60% {opacity: 1;-moz-transform: translate(0,0);}
+        100% {opacity: 0;-moz-transform: translate(0,-8px);}
+    }
+    @keyframes start {
+        0%,30% {opacity: 0;transform: translate(0,10px);}
+        60% {opacity: 1;transform: translate(0,0);}
+        100% {opacity: 0;transform: translate(0,-8px);}
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var iniCss = {
+            height: document.documentElement.clientHeight,
+            width: document.documentElement.clientWidth
+        }
+        $('.scroll_box').css(iniCss);
+        $('.content_box').css(iniCss);
+        $('#canvas').attr({
+            'height': iniCss.height+'px',
+            'width': iniCss.width+'px'
+        }); //***
+
+        var context2D =canvas.getContext("2d");
+        var array_paint = [];
+        var lock = true;
+
+        function draw() {
+            context2D.clearRect(0,0, canvas.width, canvas.height);
+            context2D.globalAlpha = 0.8
+            //将上面的圆填充为灰色
+            context2D.fillStyle ="rgb(255, 194, 0)";
+            context2D.fillRect(0, 0, 640, 1136);
+            context2D.fill();
+        }
+        function getTransparentPercent() {
+            var imgData = context2D.getImageData(0, 0, iniCss.width, iniCss.height),
+                    pixles = imgData.data,
+                    transPixs = [];
+            for (var i = 0, j = pixles.length; i < j; i += 4) {
+                var a = pixles[i + 3];
+                if (a < 128) {
+                    transPixs.push(i);
+                }
+            }
+            return (transPixs.length / (pixles.length / 4) * 100).toFixed(2);
+        };
+
+        function paint () {
+            context2D.globalCompositeOperation = 'destination-out';
+            context2D.globalAlpha = 1;
+            context2D.strokeStyle ="#ffffff";
+            context2D.lineWidth = 35;
+            context2D.lineJoin = "round";
+
+            for(var i=0; i < array_paint.length; i++)//循环数组
+            {
+                context2D.beginPath();//context.beginPath() , 准备绘制一条路径
+                if(array_paint[i] && i){//当是拖动而且i!=0时，从上一个点开始画线。
+                    context2D.moveTo(array_paint[i-1][0], array_paint[i-1][1]);//context.moveTo(x, y) , 新开一个路径，并指定路径的起点
+                }else{
+                    context2D.moveTo(array_paint[i][0]-1, array_paint[i][1]);
+                }
+                context2D.lineTo(array_paint[i][0], array_paint[i][1]);//context.lineTo(x, y) , 将当前点与指定的点用一条笔直的路径连接起来
+                context2D.closePath();//context.closePath() , 如果当前路径是打开的则关闭它
+                context2D.stroke();//context.stroke() , 绘制当前路径
+            }
+
+        }
+        draw();
+        $('canvas')
+                .on('touchmove', function (event) {
+                    event.preventDefault();
+
+
+                    var x = event.originalEvent.targetTouches[0].clientX,
+                            y = event.originalEvent.targetTouches[0].clientY;
+                    $('.console').html('x:'+x+'||y:'+y);
+                    array_paint.push([x, y]);
+                    paint();
+                })
+                .on('touchend', function () {
+                    array_paint = [];
+                    var percent = getTransparentPercent();
+                    console.log(percent);
+                    if(percent > 20){
+                        $('canvas').addClass('canvas_hide');
+                        lock = false;
+                    }
+                })
+        $('body')
+                .on('touchstart', function(event){
+                    event.preventDefault();
+                    if(lock)return;
+                    var target = $(event.target).parent(),
+                            prev = target.prev('.scroll_box'),
+                            next = target.next('.scroll_box');
+                    target.removeClass('animation');
+                    if(prev.length !== 0){
+                        prev.removeClass('animation').show().css('-webkit-transform','translate3d(0,'+(-next.height())+'px,0)');
+                    }
+                    if(next.length !== 0){
+                        next.removeClass('animation').show().css('-webkit-transform','translate3d(0,'+(next.height())+'px,0)');
+                    }
+                    window.oldY = event.originalEvent.targetTouches[0].screenY;
+                })
+                .on('touchmove', function(event){
+                    event.preventDefault();
+                    if(lock)return;
+                    var target = $(event.target).parent(),
+                            prev = target.prev('.scroll_box'),
+                            next = target.next('.scroll_box'),
+                            height = prev.height() || next.height();
+                    var newY = event.originalEvent.targetTouches[0].screenY;
+                    var distance = window.distance = window.oldY - newY;
+                    var a = 1-Math.abs(distance*0.8)/height;
+                    if(prev.length == 0 && distance<0)return;
+                    if(next.length == 0 && distance>0)return;
+                    target.css('-webkit-transform', 'translateY('+-distance*0.2+'px) scale('+a+')');
+                    target.css('z-index', -999);
+                    next.css('-webkit-transform','translate3d(0,'+(height-distance)+'px,0)');
+                    prev.css('-webkit-transform','translate3d(0,'+(-height-distance)+'px,0)');
+                })
+                .on('touchend', function(event){
+                    event.preventDefault();
+                    if(lock)return;
+                    var target = $(event.target).parent(),
+                            prev = target.prev('.scroll_box'),
+                            next = target.next('.scroll_box'),
+                            height = prev.height() || next.height();
+                    var distance = window.distance;
+                    if(distance > 0){
+                        if(next.length == 0)return;
+                        if(Math.abs(distance) > 80){
+                            prev.hide();
+                            target.addClass('animation').css('-webkit-transform', 'translateY('+-distance+'px) scale(0.5)');
+                            setTimeout(function () {
+                                target.hide();
+                            }, 300);
+                            next.addClass('animation').css('-webkit-transform','translate3d(0,0,0)');
+                        } else {
+                            target.addClass('animation').css('-webkit-transform', 'none');
+                            next.addClass('animation').css('-webkit-transform','translate3d(0,'+(height)+'px,0)');
+                        }
+                    } else if(distance < 0){
+                        if(prev.length == 0)return;
+                        if(Math.abs(distance) > 80){
+                            next.hide();
+                            target.addClass('animation').css('-webkit-transform', 'translateY('+(height+distance)+'px) scale(0.5)');
+                            setTimeout(function () {
+                                target.hide();
+                            }, 300);
+                            prev.addClass('animation').css('-webkit-transform','translate3d(0,0,0)');
+                        } else {
+                            target.addClass('animation').css('-webkit-transform', 'none');
+                            prev.addClass('animation').css('-webkit-transform','translate3d(0,'+(-height)+'px,0)');
+                        }
+                    }
+                    target.css('z-index', 0);
+                });
+    })
+</script>
