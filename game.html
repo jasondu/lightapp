@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="initial-scale=1, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, width=device-width,target-densitydpi=device-dpi"/>
+    <title>眼疾手快！看看你是不是手残党</title>
+    <style>
+        .game_layer {
+            position: absolute;
+            top: 40%;
+            left: 0;
+            width: 400px;
+        }
+        .block {
+            float: left;
+            background-size: 100%;
+            background-color: white;
+            width: 80px;
+            height: 80px;
+            background-repeat: repeat;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            overflow: hidden;
+        }
+        .banner {
+            display: none;
+            height: 80px;
+            width: 100%;
+            background-color: #ead6cf;
+            text-align: center;
+            float: left;
+        }
+        .msg {
+            padding: 5%;
+            float: left;
+            width: 90%;
+        }
+        .msg span.score, span.time {
+            display: block;
+            width: 35%;
+            background-color: rosybrown;
+            text-align: center;
+            line-height: 60px;
+        }
+        .msg span.score {
+            float: left;
+        }
+        .msg span.time {
+            float: right;
+        }
+        .button {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: white;
+            font-size: 50px;
+        }
+        .button_l {
+            background-image: url("img/button_white_l.png");
+        }
+        .button_r {
+            background-image: url("img/button_white_r.png");
+        }
+        .button div {
+            height: 80px;
+            float: left;
+            background-color: brown;
+            border: 1px solid;
+            text-align: center;
+            line-height: 100px;
+            background-position: center;
+            background-size: 30%;
+            background-repeat: no-repeat;
+        }
+        .button div:active {
+            background-color: #a57880;
+        }
+        .content {
+            position: absolute;
+            top: 40%;
+            left: 0;
+            background-color: white;
+        }
+        .yellow {
+            background-color: yellow;
+        }
+        .img_l {
+            background-image: url("img/arrow1.png");
+        }
+        .img_r {
+            background-image: url("img/arrow2.png");
+        }
+        .fix {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            opacity: 0.8;
+            color: white;
+        }
+        .fix .result {
+            text-align: center;
+        }
+        .button_go {
+            background-color: #A7A7A7;
+            opacity: 1;
+            display: block;
+            width: 250px;
+            margin: 0 auto;
+            padding: 20px;
+            color: black;
+        }
+        .game_lay_bg {
+            overflow: hidden;
+            width: 320px;
+            height: 368px;
+            position: absolute;
+        }
+    </style>
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+    <script type="text/javascript">
+        var isDesktop = navigator['userAgent'].match(/(ipad|iphone|ipod|android|windows phone)/i) ? false : true;
+        var fontunit        = isDesktop ? 20 : ((window.innerWidth>window.innerHeight?window.innerHeight:window.innerWidth)/210)*10;
+        document.write('<style type="text/css">'+
+                'html,body {font-size:'+(fontunit<30?fontunit:'30')+'px;}'+
+                (isDesktop?'#welcome,#GameTimeLayer,#GameLayerBG,#GameScoreLayer.SHADE{position: absolute;}':
+                        '#welcome,#GameTimeLayer,#GameLayerBG,#GameScoreLayer.SHADE{position:fixed;}@media screen and (orientation:landscape) {#landscape {display: box; display: -webkit-box; display: -moz-box; display: -ms-flexbox;}}')+
+                '</style>');
+    </script>
+    <script type="text/javascript" src="http://tajs.qq.com/stats?sId=36153785" charset="UTF-8"></script>
+    <script type="text/javascript"> var _speedMark = new Date();</script>
+
+</head>
+<body>
+<div class="banner" id="banner">adv</div>
+<div class="msg">
+    <span class="score">分数：<span id="msg_show">0</span></span>
+    <span class="time">时间：<span>10</span>s</span>
+</div>
+<div class="game_lay_bg" id="game_lay_bg">
+</div>
+
+<div class="button">
+    <div class="button_l" id="button_l"></div>
+    <div class="button_r" id="button_r"></div>
+</div>
+<div class="fix" id="result_fix" style="display: none;">
+    <p style="text-align: right; padding-left: 10px; margin: 0">
+        <img src="img/share.png" id="share-wx-img" style="max-width: 280px; padding-right: 25px;">
+    </p>
+    <div class="result" style="margin-top: -10px;">
+        <h1 id="score" style="margin-bottom: 5px">得分：<span></span></h1>
+        <h3 id="best_score"  style="color: red">历史最高分：<span style="color: red"></span></h3>
+        <h1 id="jibie">级别：<span></span></h1>
+        <h2 id="jianyi">建议：<span></span></h2>
+        <div class="button_go" id="button_go">再撸一次（GO）</div>
+    </div>
+</div>
+<div class="fix" id="welcome_fix" style="display: none;">
+    <div class="result" style="padding-top: 40%;">
+        <h1>你的手指能撸<br>多少关呢！</h1>
+        <div class="button_go" id="button_hide">手指准备好了（GO）</div>
+    </div>
+</div>
+</body>
+</html>
+<script src="http://code.createjs.com/createjs-2013.12.12.min.js"></script>
+<script charset="utf-8">
+$(document).ready(function () {
+    window.shareData = {
+        "imgUrl": "http://duguangwei.sinaapp.com/img/onsite05a.jpg",
+        "timeLineLink": "http://duguangwei.sinaapp.com/game.html",
+        "tTitle": "眼疾手快！看看你是不是手残党",
+        "tContent": "眼疾手快！看看你是不是手残党"
+    };
+
+    var timeSpan = $('.time span');
+    var num = 0;
+    var blockSize;
+    var blockNum = 6;
+    var yellowNum = 2;
+    var int, limitTime = 10, clock = limitTime;
+    var gameLayers = [];
+    var buttonL = document.getElementById('button_l');
+    var buttonR = document.getElementById('button_r');
+    var buttonGo = document.getElementById('button_go');
+    var buttonHide = document.getElementById('button_hide');
+    var banner = document.getElementById('banner');
+
+    var msgShow = document.getElementById('msg_show');
+    var body = document.body;
+
+    if(buttonL.ontouchstart === null){
+        buttonL.ontouchstart = leftBtnEvent;
+    }else{
+        buttonL.onmousedown = leftBtnEvent;
+    }
+    if(buttonR.ontouchstart === null){
+        buttonR.ontouchstart = rightBtnEvent;
+    }else{
+        buttonR.onmousedown = rightBtnEvent;
+    }
+
+    if(buttonGo.ontouchstart === null){
+        buttonGo.ontouchstart = goBtnEvent;
+    }else{
+        buttonGo.onmousedown = goBtnEvent;
+    }
+
+    if(buttonHide.onmousedown){
+        buttonHide.onmousedown = hideFixEvent;
+    }else{
+        buttonHide.onmousedown = hideFixEvent;
+    }
+    // weixin listen
+    document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
+
+        WeixinJSBridge.on('menu:share:appmessage', function(argv) {
+            WeixinJSBridge.invoke('sendAppMessage', {
+                "img_url": window.shareData.imgUrl,
+                "link": window.shareData.timeLineLink,
+                "desc": window.shareData.tContent,
+                "title": window.shareData.tTitle
+            }, function(res) {
+//                    document.location.href = mebtnopenurl;
+            })
+        });
+
+        WeixinJSBridge.on('menu:share:timeline', function(argv) {
+            WeixinJSBridge.invoke('shareTimeline', {
+                "img_url": window.shareData.imgUrl,
+                "img_width": "640",
+                "img_height": "640",
+                "link": window.shareData.timeLineLink,
+                "desc": window.shareData.tContent,
+                "title": window.shareData.tTitle
+            }, function(res) {
+//                    document.location.href = mebtnopenurl;
+            });
+        });
+    }, false);
+
+    var evt = "onorientationchange" in window ? "orientationchange" : "resize";
+
+    window.onorientationchange = function() {
+//            initLayer();
+    };
+
+    createjs.Sound.registerSound( {src:"sound/end.mp3", id:"end"} );
+    createjs.Sound.registerSound( {src:"sound/err.mp3", id:"err"} );
+    createjs.Sound.registerSound( {src:"sound/tap.mp3", id:"tap"} );
+
+    function leftBtnEvent () {
+        if(num == 0){int = setInterval(time, 10);}
+        var current = gameLayers.filter(function (obj){return obj.id == 'current'})[0];
+        for(var i= 0, len = current.children.length; i<len; i++) {
+            var child = current.children[i];
+            if(!/yellow/.test(child.className)){
+                if(/img_l/.test(child.className)){
+                    child.className += ' yellow';
+                    moveLayer();
+                }else{
+                    error();
+                }
+                break;
+            }
+        }
+
+        return false;   // must add this, or is run two times in iphone
+    }
+    function rightBtnEvent () {
+        if(num == 0){int = setInterval(time, 10);}
+        var current = gameLayers.filter(function (obj){return obj.id == 'current'})[0];
+        for(var i= 0, len = current.children.length; i<len; i++) {
+            var child = current.children[i];
+            if(!/yellow/.test(child.className)){
+                if(/img_r/.test(child.className)){
+                    child.className += ' yellow';
+                    moveLayer();
+                }else{
+                    error();
+                }
+                break;
+            }
+        }
+
+        return false;   // must add this, or is run two times in iphone
+    }
+
+    function goBtnEvent () {
+        start();
+    }
+
+    function hideFixEvent () {
+        $('.fix#welcome_fix').hide();
+    }
+    function moveLayer () {
+        num++;
+        showScore();
+        createjs.Sound.play("tap");
+        if(num <= yellowNum)return;
+        for (var i = 0, len = gameLayers.length; i<len; i++) {
+            var gameLayer = gameLayers[i];
+            gameLayer.x = gameLayer.x - blockSize;
+            gameLayer.style['webkitTransform'] = 'translate3d('+(gameLayer.x)+'px, 0px, 0px)';
+            if(gameLayer.x == -blockSize*(blockNum+1)){
+                refreshGameLayer(gameLayer, true);
+            }
+            if(gameLayer.x == -blockSize*(blockNum+1-yellowNum)){
+                gameLayer.id = 'nocurrent';
+            }
+            if(gameLayer.x == blockSize*yellowNum){
+                gameLayer.id = 'current';
+            }
+        }
+        return false;
+    }
+    function refreshGameLayer (box, loop) {
+        for(var i = 0,len = box.children.length; i<len; i++) {
+            var child = box.children[i],
+                    childStyle = child.style;
+            child.className = child.className.replace(/ img_l| img_r/, '').replace(/ yellow/, '');
+            if(Math.random().toFixed() == '0'){
+                child.className += ' img_l';
+            } else {
+                child.className += ' img_r';
+            }
+
+        }
+        if (loop) {
+            box.style.webkitTransitionDuration = '0ms';
+            box.x = blockSize * (blockNum+1);
+            box.style['webkitTransform'] = 'translate3d('+(box.x)+'px, 0px, 0px)';
+            box.id = 'no_current';
+        } else {
+            box.x = 0;
+            box.style['webkitTransform'] = 'translate3d('+(box.x)+'px, 0px, 0px)';
+            box.id = 'current';
+        }
+        box.style.webkitTransitionDuration = '150ms';
+        return false;
+    }
+    function gameInit () {
+        initLayer();
+        start();
+        showWelcome();
+    }
+    function initLayer () {
+        buttonL.style.width = buttonR.style.width = Math.floor(window.innerWidth/2)-2+'px';
+        buttonL.style.height = buttonR.style.height = Math.floor(window.innerHeight/5)+'px';
+        banner.style.height = Math.floor(window.innerHeight/10)+'px';
+        body.style.height = window.innerHeight+'px';
+        body.style.width = window.innerWidth+'px';
+        document.getElementById('game_lay_bg').style.width = window.innerWidth+'px'
+        document.getElementById('game_lay_bg').style.height = window.innerHeight+'px'
+        blockSize = Math.ceil(window.innerWidth/(blockNum));
+        var html = '';
+        for(var i = 0; i<2; i++){
+            html += '<div class="game_layer" id="gamelayer'+(i+1)+'" style="width: '+blockSize*(blockNum+1)+'px;">';
+            for(var j = 0; j<(blockNum+1); j++){
+                html += '<div class="block" style="width: '+blockSize+'px;height: '+blockSize+'px;"></div>';
+            }
+            html += '</div>';
+        }
+        document.getElementById('game_lay_bg').innerHTML = html;
+        gameLayers.push(document.getElementById('gamelayer1'));
+        gameLayers.push(document.getElementById('gamelayer2'));
+    }
+    function showWelcome () {
+        $('.fix#welcome_fix').show();
+    }
+    function error (result) {
+        clearInterval(int);
+        if(result == 'timeover'){
+            createjs.Sound.play("end");
+        } else {
+            createjs.Sound.play("err");
+        }
+        var jibie, jianyi, percentage;
+        var bestNum = parseInt(localStorage.getItem('game_score')) || 0;
+        if(num > bestNum){
+            localStorage.setItem('game_score', num);
+            bestNum = num;
+        }
+        if (num <=5){
+            jibie = '超级手残'+num+'级';
+            jianyi = '是眼睛不行还是手残呢？';
+            percentage = '20';
+        } else if (5<num && num<=10) {
+            jibie = '轻微手残'+num+'级';
+            jianyi = '频率太慢啦！得要练练！';
+            percentage = '45';
+        } else if (10<num && num<=20) {
+            jibie = '手残'+num+'级';
+            jianyi = '撸到有感觉了吗？';
+            percentage = '58';
+        } else if (20<num && num<=35) {
+            jibie = '小手一抖'+num+'级';
+            jianyi = '似乎是那么回事了，恭喜你摆脱手残了！';
+            percentage = '68';
+        } else if (35<num && num<=45) {
+            jibie = '至尊圣手'+num+'级';
+            jianyi = '这么快，感受到快感了吗！';
+            percentage = '78';
+        } else {
+            jibie = '强撸灰飞烟灭';
+            jianyi = '强撸灰飞烟灭，停手吧，骚年！';
+            percentage = '99';
+        }
+
+        $('#score span').html(num);
+        $('#jibie span').html(jibie);
+        $('#jianyi span').html(jianyi);
+        $('#best_score span').html(bestNum);
+        $('.fix#result_fix').show();
+
+        window.shareData.tTitle = '看看你是不是手残，10秒我撸了'+num+'次，击败了全国'+percentage+'％得人！不服来挑战！！！'
+    }
+
+    function showScore () {
+        $('.score span').html(num);
+    }
+    function start () {
+        refreshGameLayer(gameLayers[0]);
+        refreshGameLayer(gameLayers[1], true);
+        num = 0;
+        clock = limitTime;
+        $('.fix').hide();
+        showScore(0);
+        timeSpan.html(10);
+        clearInterval(int);
+    }
+    function time () {
+        clock = (clock - 0.01).toFixed(2);
+        if(clock<0){
+            clearInterval(int);
+            timeSpan.html(0);
+            error('timeover');
+            return;
+        }
+        timeSpan.html(clock);
+    }
+
+    gameInit();
+})
+</script>
