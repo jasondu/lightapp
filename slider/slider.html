@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>幻灯片</title>
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+</head>
+<body>
+<section class="wrapper" id="slider">
+    <div class="slider_label">
+        <div class="slider_prev_btn slider_btn"></div>
+        <ul style="display: none;" id="slider_1">
+            <li><img src="http://gtms03.alicdn.com/tps/i3/TB1b1f9FVXXXXbbXXXXvKyzTVXX-520-280.jpg" alt=""/></li>
+            <li><img src="http://gtms01.alicdn.com/tps/i1/TB1v7n3FVXXXXcoXpXXXK5zTVXX-520-280.png" alt=""/></li>
+            <li><img src="http://i.mmcdn.cn/simba/img/TB1CcfqFVXXXXaTXXXXSutbFXXX.jpg" alt=""/></li>
+        </ul>
+        <div class="slider_next_btn slider_btn"></div>
+    </div>
+    <div class="btn_label">
+        <div class="img_label"><img src="" alt=""/></div>
+        <div class="prev_btn btn"></div>
+        <div class="next_btn btn"></div>
+    </div>
+</section>
+</body>
+</html>
+
+<style type="text/css">
+    .slider_btn {
+        width: 55px;
+        height: 108px;
+        position: absolute;
+        cursor: pointer;
+        z-index: 999;
+        opacity: 0.5;
+        transition: opacity 0.5s;
+    }
+    .slider_btn:hover {
+        opacity: 1;
+    }
+    .slider_prev_btn {
+        background-image: url("img/pleft.png");
+        left: 100px;
+        top: 223px;
+    }
+    .slider_next_btn {
+        background-image: url("img/nright.png");
+        right: 100px;
+        top: 223px;
+    }
+    .wrapper {
+        width: 1185px;
+        margin: 0 auto;
+        padding-bottom: 10px;
+        background: url(img/factbg.png) no-repeat;
+        height: 905px;
+    }
+    body {
+        padding: 0;
+        margin: 0;
+        text-align: center;
+    }
+    .btn_label {
+        position: relative;
+        height: 20px;
+        display: inline-block;
+        bottom: -150px;
+    }
+    .focus {
+        display: block;
+        float: left;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        margin: 0;
+        background-color: #ffffff;
+        -webkit-border-radius: 15px;
+    }
+    .focus:hover {
+        background-color: red;
+    }
+    .focus.cur {
+        background-color: red;
+    }
+    .line {
+        float: left;
+        border-top: 2px solid #ffffff;
+        width: 50px;
+        margin-top: 9px;
+    }
+    .img_label {
+        display: none;
+        width: 50px;
+        height: 70px;
+        border: 4px solid #ffffff;
+        position: absolute;
+        top: -90px;
+        left: -20px;
+        transition: left 0.8s;
+    }
+    .img_label img {
+        width: 50px;
+        height: 70px;
+    }
+    .btn_label .btn {
+        width: 20px;
+        height: 20px;
+        background-color: #ffffff;
+        -webkit-border-radius: 15px;
+        margin: 0 10px;
+    }
+    .prev_btn {
+        float: left;
+    }
+    .next_btn {
+        float: right;
+    }
+    .slider_label {
+        width: 100%;
+        height: 680px;
+        background-color: #000000;
+        position: relative;
+        overflow: hidden;
+        margin: auto;
+        top: 125px;
+    }
+    .slider_label ul {
+        height: 500px;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        float: left;
+    }
+    .animation {
+        transition: all 0.8s;
+    }
+    .slider_label ul li {
+        margin: 0 40px;
+        padding: 0;
+        height: 100%;
+        float: left;
+        width: 805px;
+        border: 10px solid #ffffff;
+        list-style-type:none;
+        -webkit-box-reflect: below 0 -webkit-gradient(linear,0 70%,0 120%,from(transparent),color-stop(0, transparent),to(#000));
+    }
+    .slider_label ul li img {
+        height: 100%;
+        width: 805px;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var ul = $('.slider_label ul'),
+                lis = ul.find('li'),
+                btnLabel = $('.btn_label');
+        var html = '';
+        var liWidth = 905,
+                sliderWidth = 1185;
+        for (var i = 0, len = lis.length; i < len; i++) {
+            var li = $(lis[i]), imgUrl = li.find('img').attr('src');
+            li.attr('data-id', i);
+            var className = (i == 0) ? 'focus cur' : 'focus';
+            html += '<span class="'+className+'" data-id="'+i+'" data-src="'+imgUrl+'"></span>';
+            if(i != (len - 1)){
+                html += '<div class="line"></div>';
+            }
+        }
+        btnLabel.append(html);
+        ul.prepend(ul.find('li').clone());
+        ul.css('left', (sliderWidth-liWidth)/2 - lis.length*liWidth);
+        lis = ul.find('li');
+        ul.css('width', lis.length * liWidth).show();
+
+
+        var focus = $('#slider .focus');
+        $('#slider')
+                .on('click', '.focus', function (e) {
+                    if(lock)return;
+                    lock = true;
+                    var currentLi = $('.slider_label li')[lis.length/2];
+                    var currentNum = parseInt(currentLi.dataset.id);
+                    var targetNum = parseInt(this.dataset.id);
+                    if(currentNum < targetNum) {
+                        ul.addClass('animation').css({
+                            '-webkit-transform': 'translateX('+-liWidth*(targetNum - currentNum)+'px)'
+                        });
+                        setTimeout(function () {
+                            ul.find('li:lt('+Math.abs(targetNum - currentNum)+')').appendTo(ul);
+                            ul.removeClass('animation').css({
+                                '-webkit-transform': 'translateX(0px)'
+                            });
+                            addCur();
+                            lock = false;
+                        }, 800);
+                    } else if (currentNum > targetNum) {
+                        ul.addClass('animation').css({
+                            '-webkit-transform': 'translateX('+liWidth*(currentNum - targetNum)+'px)'
+                        });
+                        setTimeout(function () {
+                            ul.find('li:gt('+(lis.length-Math.abs(targetNum - currentNum)-1)+')').prependTo(ul);
+                            ul.removeClass('animation').css({
+                                '-webkit-transform': 'translateX(0px)'
+                            });
+                            addCur();
+                            lock = false;
+                        }, 800);
+                    } else {
+                        lock = false;
+                    }
+
+                })
+                .on('mouseover', '.focus', function (e) {
+                    var imgUrl = this.dataset.src;
+                    $('.img_label').find('img').attr('src', imgUrl).end()
+                            .show().css('left', this.offsetLeft - 20);
+                })
+                .on('mouseleave', '.btn_label', function (e) {
+                    $('.img_label').delay(1000).hide(1);
+                })
+                .on('click', '.slider_prev_btn', prev)
+                .on('click', '.slider_next_btn', next)
+                .on('click', '.prev_btn', prev)
+                .on('click', '.next_btn', next);
+        var lock = false;
+        function prev () {
+            if(lock)return;
+            lock = true;
+            ul.addClass('animation').css({
+                '-webkit-transform': 'translateX('+liWidth+'px)'
+            });
+            setTimeout(function () {
+                ul.find('li:last').prependTo(ul);
+                ul.removeClass('animation').css({
+                    '-webkit-transform': 'translateX(0px)'
+                });
+                addCur();
+                lock = false;
+            }, 800)
+        }
+        function next () {
+            if(lock)return;
+            lock = true;
+            ul.addClass('animation').css({
+                '-webkit-transform': 'translateX('+-liWidth+'px)'
+            });
+            setTimeout(function () {
+                ul.find('li:first').appendTo(ul);
+                ul.removeClass('animation').css({
+                    '-webkit-transform': 'translateX(0px)'
+                });
+                addCur();
+                lock = false;
+            }, 800);
+        }
+        function addCur () {
+            var currentLi = $('.slider_label li')[lis.length/2];
+            $('#slider .focus.cur').removeClass('cur');
+            $('#slider .focus[data-id='+currentLi.dataset.id+']').addClass('cur');
+        }
+    })
+</script>
