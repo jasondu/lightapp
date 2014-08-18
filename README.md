@@ -1,3 +1,3 @@
--scroll.html        //这是一个微信推广的网页，有一组照片可以向上滑动，并有类似刮刮卡的效果
--game.html          //微信游戏，http://duguangwei.sinaapp.com/game.html
--slider/slider.html // 幻灯片
+-scroll.html        //这是一个微信推广的网页，有一组照片可以向上滑动，并有类似刮刮卡的效果<br/>
+-game.html          //微信游戏，http://duguangwei.sinaapp.com/game.html<br/>
+-slider/slider.html // 幻灯片<br/>
